@@ -7,7 +7,11 @@
 //
 
 #import "AppDelegate.h"
-
+#import "IQKeyboardManager.h"
+#import "AFNetworking.h"
+#import "HttpAPI.h"
+#import "SVProgressHUD.h"
+#import "LoginViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -17,9 +21,49 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    self.window = [[UIWindow alloc]initWithFrame:[UIScreen mainScreen].bounds];
+    //键盘收缩装置
+    [IQKeyboardManager sharedManager].enable = YES;
+    [IQKeyboardManager sharedManager].shouldResignOnTouchOutside = YES;
+    //设置主界面
+    LoginViewController *loginVC = [[LoginViewController alloc]init];
+    UINavigationController *loginNavVC = [[UINavigationController alloc]initWithRootViewController:loginVC];
+    self.window.rootViewController = loginNavVC;
+    [self reachabilityNetworking];
+    [self.window makeKeyAndVisible];
     return YES;
 }
-
+#pragma mark - 检测网络状态
+-(void)reachabilityNetworking{
+    [HttpAPI setReachabilityStatusChangeBlock:^(NetworkReachabilityStatus status) {
+        switch (status) {
+            case NetworkReachabilityStatusReachableViaWiFi:{
+                [SVProgressHUD showWithStatus:@"WI-FI"];
+                NSLog(@"WIFI");
+                [SVProgressHUD dismissWithDelay:0.5];
+            }
+                break;
+            case NetworkReachabilityStatusReachableViaWWAN:{
+                [SVProgressHUD showWithStatus:@"3g/4g"];
+                NSLog(@"3g/4g");
+                [SVProgressHUD dismissWithDelay:0.5];
+            }
+                break;
+            case NetworkReachabilityStatusUnknown:{
+                [SVProgressHUD showWithStatus:@"未知网络"];
+                NSLog(@"未知网络");
+                [SVProgressHUD dismissWithDelay:0.5];
+            }
+                break;
+            default:{
+                [SVProgressHUD showWithStatus:@"没有网络"];
+                NSLog(@"没有网络");
+                [SVProgressHUD dismissWithDelay:0.5];
+            }
+                break;
+        }
+    }];
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
